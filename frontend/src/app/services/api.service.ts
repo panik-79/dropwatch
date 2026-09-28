@@ -1,12 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { API_BASE_URL, JWT_STORAGE_KEY } from '../constants';
+import { JWT_STORAGE_KEY } from '../constants';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = API_BASE_URL;
+  private readonly baseUrl = environment.apiBaseUrl;
 
   private getHeaders(): HttpHeaders {
     const token = (typeof window !== 'undefined' && localStorage.getItem(JWT_STORAGE_KEY)) || '';

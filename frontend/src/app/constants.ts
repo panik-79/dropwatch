@@ -5,7 +5,9 @@
  */
 
 // ─── API ──────────────────────────────────────────────────────────────────────
+/** @deprecated Use environment.apiBaseUrl from environments/environment.ts instead */
 export const API_BASE_URL = '';
+/** @deprecated Use environment.sseStreamUrl from environments/environment.ts instead */
 export const SSE_STREAM_URL = 'http://localhost:8080/api/v1/stream/live';
 
 // ─── Placeholder Assets ───────────────────────────────────────────────────────

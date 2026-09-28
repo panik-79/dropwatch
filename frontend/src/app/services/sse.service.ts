@@ -3,7 +3,8 @@ import { TrackerStore } from './tracker.store';
 import { FlagStore } from './flag.store';
 import { SoundService } from './sound.service';
 import { ConfettiService } from './confetti.service';
-import { FLAG_KEYS, SSE_STREAM_URL, SSE_RECONNECT_BASE_MS, SSE_RECONNECT_MAX_MS, SSE_RECONNECT_MULTIPLIER } from '../constants';
+import { FLAG_KEYS, SSE_RECONNECT_BASE_MS, SSE_RECONNECT_MAX_MS, SSE_RECONNECT_MULTIPLIER } from '../constants';
+import { environment } from '../../environments/environment';
 import type { AlertItem } from '../models/tracker.models';
 
 @Injectable({ providedIn: 'root' })
@@ -41,7 +42,7 @@ export class SseService {
     this.closeEventSource();
 
     try {
-      this.eventSource = new EventSource(SSE_STREAM_URL);
+      this.eventSource = new EventSource(environment.sseStreamUrl);
 
       this.eventSource.onopen = () => {
         this.isConnected.set(true);
