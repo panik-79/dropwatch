@@ -9,11 +9,14 @@ spring:
       uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/dropwatch?directConnection=true}
       auto-index-creation: true
   rabbitmq:
+    addresses: ${SPRING_RABBITMQ_ADDRESSES:${SPRING_RABBITMQ_URI:}}
     host: ${SPRING_RABBITMQ_HOST:localhost}
     port: ${SPRING_RABBITMQ_PORT:5672}
     username: ${SPRING_RABBITMQ_USERNAME:dropwatch}
     password: ${SPRING_RABBITMQ_PASSWORD:dropwatch123}
     virtual-host: ${SPRING_RABBITMQ_VIRTUAL_HOST:${SPRING_RABBITMQ_USERNAME:dropwatch}}
+    ssl:
+      enabled: ${SPRING_RABBITMQ_SSL_ENABLED:false}
     listener:
       simple:
         prefetch: 10

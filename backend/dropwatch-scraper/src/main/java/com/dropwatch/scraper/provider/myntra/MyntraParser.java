@@ -33,7 +33,10 @@ public class MyntraParser {
         // Try window.__myx script first
         Elements scripts = doc.select("script");
         for (Element script : scripts) {
-            String data = script.html();
+            String data = script.data();
+            if (data == null || data.isBlank()) {
+                data = script.html();
+            }
             if (data.contains("window.__myx =") || data.contains("pdpData")) {
                 try {
                     int jsonStart = data.indexOf('{');
@@ -180,16 +183,27 @@ public class MyntraParser {
     }
 
     private ProductSnapshot buildFromDom(Document doc, String siteProductId, String canonicalUrl) {
-        String title = doc.select("h1.pdp-title, h1.pdp-name, meta[property=og:title]").attr("content");
+        String title = doc.select("meta[property=og:title]").attr("content");
+        if (title.isBlank()) {
+            String brandText = doc.select("h1.pdp-title").text();
+            String nameText = doc.select("h1.pdp-name").text();
+            title = (brandText + " " + nameText).trim();
+        }
         if (title.isBlank()) title = doc.select("h1").text();
         if (title.isBlank()) title = "Myntra Item " + siteProductId;
 
         String brand = doc.select("h1.pdp-title").text();
+        if (brand.isBlank()) {
+            brand = doc.select("meta[property=product:brand]").attr("content");
+        }
         if (brand.isBlank()) brand = "Myntra";
 
         String imageUrl = doc.select("meta[property=og:image]").attr("content");
 
         String priceStr = doc.select(".pdp-price strong, .pdp-selling-price").text().replaceAll("[^0-9.]", "");
+        if (priceStr.isBlank()) {
+            priceStr = doc.select("meta[property=product:price:amount]").attr("content").replaceAll("[^0-9.]", "");
+        }
         BigDecimal price = priceStr.isBlank() ? BigDecimal.ZERO : new BigDecimal(priceStr);
 
         String mrpStr = doc.select(".pdp-mrp s, .pdp-mrp").text().replaceAll("[^0-9.]", "");
