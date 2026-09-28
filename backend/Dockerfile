@@ -14,6 +14,7 @@ COPY dropwatch-notify/pom.xml dropwatch-notify/
 COPY dropwatch-api/pom.xml dropwatch-api/
 COPY dropwatch-app/pom.xml dropwatch-app/
 
+RUN chmod +x ./mvnw
 RUN ./mvnw dependency:go-offline -B -pl dropwatch-app -am || true
 
 COPY . .

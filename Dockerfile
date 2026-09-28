@@ -15,6 +15,7 @@ COPY backend/dropwatch-notify/pom.xml dropwatch-notify/
 COPY backend/dropwatch-api/pom.xml dropwatch-api/
 COPY backend/dropwatch-app/pom.xml dropwatch-app/
 
+RUN chmod +x ./mvnw
 RUN ./mvnw dependency:go-offline -B -pl dropwatch-app -am || true
 
 # Copy source code and build executable jar
