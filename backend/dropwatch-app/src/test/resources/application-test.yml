@@ -1,0 +1,16 @@
+spring:
+  data:
+    mongodb:
+      auto-index-creation: false
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+dropwatch:
+  jwt:
+    secret: 9a8f7e6d5c4b3a210987654321fedcba9a8f7e6d5c4b3a210987654321fedcba
+  telegram:
+    bot-token: test-token
+    bot-username: TestBot

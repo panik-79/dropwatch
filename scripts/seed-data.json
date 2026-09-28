@@ -1,0 +1,73 @@
+{
+  "users": [
+    {
+      "_id": "usr-demo-1",
+      "email": "demo@dropwatch.io",
+      "displayName": "Demo Engineer",
+      "passwordHash": "$2a$10$wT8f1kQzRzRzRzRzRzRzRe.1234567890abcdefghijklmnopqrst",
+      "telegramChatId": "123456789",
+      "roles": ["ROLE_USER", "ROLE_ADMIN"],
+      "schemaVersion": 1
+    }
+  ],
+  "products": [
+    {
+      "_id": "prod-myntra-nike-pegasus",
+      "site": "MYNTRA",
+      "canonicalUrl": "https://www.myntra.com/shoes/nike/nike-men-air-zoom-pegasus-40-running-shoes/23490123/buy",
+      "siteProductId": "23490123",
+      "title": "Nike Men Air Zoom Pegasus 40 Running Shoes",
+      "brand": "Nike",
+      "imageUrl": "https://assets.myntassets.com/h_1440,q_90,w_1080/v1/assets/images/23490123/2023/5/30/nike-pegasus.jpg",
+      "category": "Footwear",
+      "schemaVersion": 1
+    },
+    {
+      "_id": "prod-flipkart-s24-ultra",
+      "site": "FLIPKART",
+      "canonicalUrl": "https://www.flipkart.com/samsung-galaxy-s24-ultra-5g-titanium-black-512-gb/p/itm12345678",
+      "siteProductId": "itm12345678",
+      "title": "SAMSUNG Galaxy S24 Ultra 5G (Titanium Black, 512 GB)",
+      "brand": "SAMSUNG",
+      "imageUrl": "https://rukminim2.flixcart.com/image/832/832/xif0q/mobile/5/r/8/-original-imahf38bftqkzfzh.jpeg",
+      "category": "Electronics",
+      "schemaVersion": 1
+    }
+  ],
+  "variants": [
+    {
+      "_id": "var-nike-uk9",
+      "productId": "prod-myntra-nike-pegasus",
+      "label": "UK 9",
+      "siteSkuId": "sku-23490123-9",
+      "schemaVersion": 1
+    },
+    {
+      "_id": "var-s24u-512gb",
+      "productId": "prod-flipkart-s24-ultra",
+      "label": "512 GB / Titanium Black",
+      "siteSkuId": "sku-s24u-512",
+      "schemaVersion": 1
+    }
+  ],
+  "feature_flags": [
+    {
+      "key": "scraper.proxy-strategy",
+      "description": "Enable proxy strategy routing for scrapers",
+      "type": "BOOLEAN",
+      "enabled": false
+    },
+    {
+      "key": "alerts.telegram",
+      "description": "Enable Telegram notification dispatch channel",
+      "type": "BOOLEAN",
+      "enabled": true
+    },
+    {
+      "key": "ui.price-charts",
+      "description": "Enable interactive ECharts price history graphs",
+      "type": "BOOLEAN",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: dropwatch
+  threads:
+    virtual:
+      enabled: true
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/dropwatch?directConnection=true}
+      auto-index-creation: true
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:dropwatch}
+    password: ${SPRING_RABBITMQ_PASSWORD:dropwatch123}
+    listener:
+      simple:
+        prefetch: 10
+        concurrency: 5
+        max-concurrency: 20
+        acknowledge-mode: manual
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+dropwatch:
+  jwt:
+    secret: ${DROPWATCH_JWT_SECRET:9a8f7e6d5c4b3a210987654321fedcba9a8f7e6d5c4b3a210987654321fedcba}
+    expiration-ms: 86400000 # 24 hours
+    refresh-expiration-ms: 604800000 # 7 days
+  scraper:
+    min-poll-interval-seconds: 60
+    default-poll-interval-seconds: 3600  # 1 hour — must match DEFAULT_POLL_INTERVAL_SECONDS in frontend/constants.ts
+    connect-timeout-ms: 5000
+    read-timeout-ms: 10000
+    user-agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+  telegram:
+    bot-token: ${TELEGRAM_BOT_TOKEN:8731627261:AAH7-dDB4W5l-X1hA5J-1bEVf52j01N0oxU}
+    bot-username: ${TELEGRAM_BOT_USERNAME:DropWatchDevBot}
+    mode: ${TELEGRAM_MODE:long-polling}
