@@ -32,6 +32,7 @@ public class FetchStrategyChain {
 
     public FetchResponse executeChain(String url, FetchContext context) throws Exception {
         boolean isInteractive = context != null && context.traceId() != null && context.traceId().startsWith("api-parse-");
+        boolean isMyntra = url != null && (url.contains("myntra.com") || url.contains("mynt.in"));
 
         // Interactive parse requests from UI modal: try fast single-pass Direct HTTP first
         if (isInteractive) {
@@ -39,10 +40,13 @@ public class FetchStrategyChain {
             if (strat != null && strat.isAvailable()) {
                 try {
                     FetchResponse resp = strat.fetch(url, context);
-                    if (isSuccessfulOrNotFound(resp.statusCode()) && resp.body() != null && !resp.body().isBlank()) {
+                    if (isSuccessfulOrNotFound(resp.statusCode())
+                            && resp.body() != null
+                            && !resp.body().isBlank()
+                            && isUsableBody(resp.body(), isMyntra)) {
                         return resp;
                     }
-                    log.warn("Interactive DirectHttp returned status {}. Cascading through fallback chain...", resp.statusCode());
+                    log.warn("Interactive DirectHttp returned status {} with unusable body. Cascading through fallback chain...", resp.statusCode());
                 } catch (Exception e) {
                     log.warn("Interactive fetch error for {}: {}", url, e.getMessage());
                 }
@@ -55,7 +59,7 @@ public class FetchStrategyChain {
             if (strat.isAvailable()) {
                 try {
                     FetchResponse resp = strat.fetch(url, context);
-                    if (isSuccessfulOrNotFound(resp.statusCode())) {
+                    if (isSuccessfulOrNotFound(resp.statusCode()) && isUsableBody(resp.body(), isMyntra)) {
                         return resp;
                     }
                     log.warn("Preferred strategy {} returned status {}. Cascading...", preferred, resp.statusCode());
@@ -75,10 +79,10 @@ public class FetchStrategyChain {
 
             try {
                 FetchResponse resp = strat.fetch(url, context);
-                if (isSuccessfulOrNotFound(resp.statusCode())) {
+                if (isSuccessfulOrNotFound(resp.statusCode()) && isUsableBody(resp.body(), isMyntra)) {
                     return resp;
                 }
-                log.warn("Strategy {} returned status code {} for {}. Trying next...", stratName, resp.statusCode(), url);
+                log.warn("Strategy {} returned status code {} with unusable body for {}. Trying next...", stratName, resp.statusCode(), url);
             } catch (Exception e) {
                 log.warn("Strategy {} threw exception for {}: {}", stratName, url, e.getMessage());
                 lastException = e;
@@ -90,6 +94,34 @@ public class FetchStrategyChain {
         }
 
         throw new IllegalStateException("All fetch strategies in chain failed to fetch URL: " + url);
+    }
+
+    /**
+     * Detects bot-block / login-redirect pages that return HTTP 200 but contain no product data.
+     * Myntra specifically returns a minimal React shell (~10KB) when blocking cloud IPs.
+     */
+    private boolean isUsableBody(String body, boolean isMyntra) {
+        if (body == null || body.isBlank()) return false;
+        if (!isMyntra) return true; // Only apply quality check for Myntra
+
+        // A real Myntra PDP page is typically 400KB+. A bot-block page is <50KB.
+        // Also check for key data markers.
+        boolean hasProductData = body.contains("window.__myx") || body.contains("pdpData")
+                || body.contains("application/ld+json") || body.contains("pdp-title")
+                || body.contains("pdp-price");
+        boolean isBlockPage = body.contains("loginModal") && body.length() < 80_000
+                || body.contains("Please verify you are a human") || body.contains("captcha")
+                || body.contains("Access Denied");
+
+        if (isBlockPage) {
+            log.warn("[FetchStrategyChain] Myntra bot-detection page detected (body {}KB)", body.length() / 1024);
+            return false;
+        }
+        if (!hasProductData && body.length() < 50_000) {
+            log.warn("[FetchStrategyChain] Myntra response has no product data markers and is too small ({}KB) — likely bot block", body.length() / 1024);
+            return false;
+        }
+        return true;
     }
 
     private boolean isSuccessfulOrNotFound(int statusCode) {

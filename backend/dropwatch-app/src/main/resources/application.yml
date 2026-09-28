@@ -49,6 +49,8 @@ dropwatch:
     connect-timeout-ms: 5000
     read-timeout-ms: 10000
     user-agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+  proxy:
+    api-key: ${SCRAPER_API_KEY:}  # ScraperAPI key for residential proxy bypass (https://www.scraperapi.com)
   telegram:
     bot-token: ${TELEGRAM_BOT_TOKEN:CHANGEME_SET_TELEGRAM_BOT_TOKEN_ENV_VAR}
     bot-username: ${TELEGRAM_BOT_USERNAME:DropWatchBot}
