@@ -28,7 +28,7 @@ class ScraperEngineServiceTest {
     @BeforeEach
     void setUp() {
         DirectHttpStrategy directHttpStrategy = new DirectHttpStrategy();
-        ProxyStrategy proxyStrategy = new ProxyStrategy();
+        ProxyStrategy proxyStrategy = new ProxyStrategy(""); // No API key in tests; strategy will be disabled
         HeadlessBrowserStrategy headlessBrowserStrategy = new HeadlessBrowserStrategy();
 
         FetchStrategyChain chain = new FetchStrategyChain(List.of(directHttpStrategy, proxyStrategy, headlessBrowserStrategy));
