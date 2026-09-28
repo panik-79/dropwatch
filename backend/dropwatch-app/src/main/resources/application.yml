@@ -13,6 +13,7 @@ spring:
     port: ${SPRING_RABBITMQ_PORT:5672}
     username: ${SPRING_RABBITMQ_USERNAME:dropwatch}
     password: ${SPRING_RABBITMQ_PASSWORD:dropwatch123}
+    virtual-host: ${SPRING_RABBITMQ_VIRTUAL_HOST:${SPRING_RABBITMQ_USERNAME:dropwatch}}
     listener:
       simple:
         prefetch: 10
