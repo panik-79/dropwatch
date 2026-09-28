@@ -1,25 +1,24 @@
 # Multi-stage Docker build for DropWatch Spring Boot Backend
-FROM eclipse-temurin:21-jdk-alpine AS builder
+# Build stage: Use JDK with Maven pre-installed (avoids mvnw issues on Linux)
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 WORKDIR /app
 
-# Copy context files
-COPY . .
+# Copy backend source (from root monorepo context)
+COPY backend/ .
 
-# Build executable jar under any build context (root or backend)
-RUN if [ -d "backend" ]; then \
-      cd backend && sh mvnw clean package -DskipTests -pl dropwatch-app -am && cp dropwatch-app/target/dropwatch-app-1.0.0-SNAPSHOT.jar /app/app.jar; \
-    else \
-      sh mvnw clean package -DskipTests -pl dropwatch-app -am && cp dropwatch-app/target/dropwatch-app-1.0.0-SNAPSHOT.jar /app/app.jar; \
-    fi
+# Build the application jar
+RUN mvn clean package -DskipTests -pl dropwatch-app -am -q
 
-# Production runtime stage
+# Production runtime stage: minimal JRE image
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
+
 RUN addgroup -S dropwatch && adduser -S dropwatch -G dropwatch
 USER dropwatch
 
-COPY --from=builder /app/app.jar app.jar
+COPY --from=builder /app/dropwatch-app/target/dropwatch-app-1.0.0-SNAPSHOT.jar app.jar
 
 EXPOSE 8080
 ENV PORT=8080
+
 ENTRYPOINT ["java", "-jar", "app.jar"]
