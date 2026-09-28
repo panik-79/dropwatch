@@ -5,7 +5,7 @@
  */
 
 // ─── API ──────────────────────────────────────────────────────────────────────
-export const API_BASE_URL = 'http://localhost:8080/api/v1';
+export const API_BASE_URL = '';
 export const SSE_STREAM_URL = 'http://localhost:8080/api/v1/stream/live';
 
 // ─── Placeholder Assets ───────────────────────────────────────────────────────
