@@ -1,25 +1,11 @@
-# Multi-stage Docker build for DropWatch Spring Boot Backend
+# Multi-stage Docker build for DropWatch Spring Boot Backend (Root Context)
 FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /app
 
-# Copy Maven wrapper & POM files first for caching
-COPY backend/mvnw .
-COPY backend/.mvn .mvn
-COPY backend/pom.xml .
-COPY backend/dropwatch-parent/pom.xml dropwatch-parent/
-COPY backend/dropwatch-core/pom.xml dropwatch-core/
-COPY backend/dropwatch-flags/pom.xml dropwatch-flags/
-COPY backend/dropwatch-scraper/pom.xml dropwatch-scraper/
-COPY backend/dropwatch-messaging/pom.xml dropwatch-messaging/
-COPY backend/dropwatch-notify/pom.xml dropwatch-notify/
-COPY backend/dropwatch-api/pom.xml dropwatch-api/
-COPY backend/dropwatch-app/pom.xml dropwatch-app/
+# Copy backend source code
+COPY backend/ .
 
 RUN chmod +x ./mvnw
-RUN ./mvnw dependency:go-offline -B -pl dropwatch-app -am || true
-
-# Copy source code and build executable jar
-COPY backend/ .
 RUN ./mvnw clean package -DskipTests -pl dropwatch-app -am
 
 # Production runtime stage
