@@ -50,6 +50,6 @@ dropwatch:
     read-timeout-ms: 10000
     user-agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
   telegram:
-    bot-token: ${TELEGRAM_BOT_TOKEN:8731627261:AAH7-dDB4W5l-X1hA5J-1bEVf52j01N0oxU}
-    bot-username: ${TELEGRAM_BOT_USERNAME:DropWatchDevBot}
+    bot-token: ${TELEGRAM_BOT_TOKEN:CHANGEME_SET_TELEGRAM_BOT_TOKEN_ENV_VAR}
+    bot-username: ${TELEGRAM_BOT_USERNAME:DropWatchBot}
     mode: ${TELEGRAM_MODE:long-polling}
