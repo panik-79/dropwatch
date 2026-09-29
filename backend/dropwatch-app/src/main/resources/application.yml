@@ -17,8 +17,16 @@ spring:
     virtual-host: ${SPRING_RABBITMQ_VIRTUAL_HOST:${SPRING_RABBITMQ_USERNAME:dropwatch}}
     ssl:
       enabled: ${SPRING_RABBITMQ_SSL_ENABLED:false}
+    template:
+      retry:
+        enabled: true
+        initial-interval: 1000
+        max-attempts: 5
+        multiplier: 2.0
     listener:
       simple:
+        missing-queues-fatal: false
+        failed-declaration-retry-interval: 5000
         prefetch: 10
         concurrency: 5
         max-concurrency: 20

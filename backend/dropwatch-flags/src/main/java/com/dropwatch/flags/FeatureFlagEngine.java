@@ -63,7 +63,7 @@ public class FeatureFlagEngine {
         return saved;
     }
 
-    @RabbitListener(queues = "#{flagQueue.name}")
+    @RabbitListener(queues = FlagQueueConfig.FLAG_QUEUE_NAME)
     public void onFlagInvalidation(FlagInvalidationMessage msg) {
         if (msg != null && msg.flagKey() != null) {
             log.info("Invalidating local feature flag cache for key: {}", msg.flagKey());
