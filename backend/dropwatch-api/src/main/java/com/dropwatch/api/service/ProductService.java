@@ -52,8 +52,13 @@ public class ProductService {
             String path = uri.getPath();
             if (path != null && !path.isBlank()) {
                 String[] segments = path.split("/");
-                for (String seg : segments) {
-                    if (seg.length() > 3 && !seg.equalsIgnoreCase("p") && !seg.startsWith("itm") && !seg.equalsIgnoreCase("s")) {
+                // Search backwards for the segment before the product ID or buy/p
+                for (int i = segments.length - 1; i >= 0; i--) {
+                    String seg = segments[i];
+                    if (seg.isBlank() || seg.equalsIgnoreCase("buy") || seg.equalsIgnoreCase("p") || seg.matches("\\d+")) {
+                        continue;
+                    }
+                    if (seg.length() > 3 && seg.contains("-")) {
                         String clean = seg.replaceAll("-", " ").replaceAll("[^a-zA-Z0-9 ]", "").trim();
                         if (!clean.isEmpty()) {
                             String[] words = clean.split("\\s+");
@@ -101,8 +106,27 @@ public class ProductService {
 
         if (snap == null) {
             String title = extractTitleFromUrl(url, site);
-            String[] words = title.split("\\s+");
-            String brand = (words.length > 0 && !words[0].isEmpty()) ? words[0] : site.name();
+            String brand = site.name();
+            if (title.contains(" ")) {
+                String[] words = title.split("\\s+");
+                if (words.length >= 2) {
+                    brand = words[0] + " " + words[1];
+                } else if (words.length == 1) {
+                    brand = words[0];
+                }
+            }
+
+            // Extract numeric ID from URL if possible
+            String siteProductId = "prod-" + Math.abs(url.hashCode());
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("/(\\d{5,12})(?:/buy|\\?|$)").matcher(url);
+            if (m.find()) {
+                siteProductId = m.group(1);
+            } else {
+                java.util.regex.Matcher m2 = java.util.regex.Pattern.compile("(\\d{6,12})").matcher(url);
+                if (m2.find()) {
+                    siteProductId = m2.group(1);
+                }
+            }
 
             java.math.BigDecimal mrp = java.math.BigDecimal.ZERO;
             java.math.BigDecimal sellingPrice = java.math.BigDecimal.ZERO;
@@ -110,7 +134,7 @@ public class ProductService {
 
             var fallbackVariant = new com.dropwatch.scraper.spi.VariantSnapshot(
                     "Standard",
-                    "sku-" + Math.abs(url.hashCode()),
+                    "sku-" + siteProductId,
                     mrp,
                     sellingPrice,
                     discount,
@@ -119,7 +143,7 @@ public class ProductService {
             );
             snap = new com.dropwatch.scraper.spi.ProductSnapshot(
                     site,
-                    "prod-" + Math.abs(url.hashCode()),
+                    siteProductId,
                     title,
                     brand,
                     "https://api.invena.pl/images/product_image_placeholder.png",
@@ -143,11 +167,16 @@ public class ProductService {
                     if (resolvedImgUrl != null && !resolvedImgUrl.isBlank() && !resolvedImgUrl.contains("placeholder")) {
                         existing.setImageUrl(resolvedImgUrl);
                     }
-                    if (targetSnap.title() != null && !targetSnap.title().isBlank() && !targetSnap.title().startsWith("Flipkart Product") && !targetSnap.title().contains("Item")) {
+                    if (targetSnap.title() != null && !targetSnap.title().isBlank()
+                            && (existing.getTitle() == null || existing.getTitle().equals("Casual Shoes") || existing.getTitle().contains("Item") || existing.getTitle().length() < targetSnap.title().length())) {
                         existing.setTitle(targetSnap.title());
                     }
-                    if (targetSnap.brand() != null && !targetSnap.brand().isBlank() && !"Flipkart".equals(targetSnap.brand())) {
+                    if (targetSnap.brand() != null && !targetSnap.brand().isBlank()
+                            && (existing.getBrand() == null || "Casual".equals(existing.getBrand()) || "Myntra".equals(existing.getBrand()))) {
                         existing.setBrand(targetSnap.brand());
+                    }
+                    if (targetSnap.siteProductId() != null && !targetSnap.siteProductId().startsWith("prod-")) {
+                        existing.setSiteProductId(targetSnap.siteProductId());
                     }
                     return existing;
                 })
@@ -167,23 +196,24 @@ public class ProductService {
 
         List<Variant> variants = targetSnap.variants().stream()
                 .map(v -> {
-                    Variant existing = variantRepository.findByProductIdAndSiteSkuId(saved.getId(), v.skuId()).orElse(null);
+                    Variant existing = variantRepository.findByProductIdAndSiteSkuId(saved.getId(), v.skuId())
+                            .or(() -> variantRepository.findByProductId(saved.getId()).stream().findFirst())
+                            .orElse(null);
 
                     if (existing != null) {
+                        existing.setSiteSkuId(v.skuId());
+                        if (v.label() != null && !v.label().isBlank()) {
+                            existing.setLabel(v.label());
+                        }
                         if (v.sellingPrice() != null && v.sellingPrice().compareTo(java.math.BigDecimal.ZERO) > 0) {
-                            existing.setSiteSkuId(v.skuId());
-                            if (v.label() != null && !v.label().isBlank()) {
-                                existing.setLabel(v.label());
-                            }
                             existing.setAttributes(Map.of(
                                     "mrp", v.mrp() != null ? v.mrp() : java.math.BigDecimal.ZERO,
-                                    "sellingPrice", v.sellingPrice() != null ? v.sellingPrice() : java.math.BigDecimal.ZERO,
+                                    "sellingPrice", v.sellingPrice(),
                                     "inStock", v.inStock(),
                                     "discountPercent", v.discountPercent()
                             ));
-                            return variantRepository.save(existing);
                         }
-                        return existing;
+                        return variantRepository.save(existing);
                     }
 
                     Variant newVar = Variant.builder()
